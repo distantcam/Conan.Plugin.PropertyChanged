@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Conan.Plugin.PropertyChanged", "Conan.Plugin.PropertyChanged\Conan.Plugin.PropertyChanged.csproj", "{ED4763AD-9F26-4869-B1BB-83A0FB30F877}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{7097EBE1-9F3D-48B9-A46F-A7B9B92D584A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ED4763AD-9F26-4869-B1BB-83A0FB30F877} = {ED4763AD-9F26-4869-B1BB-83A0FB30F877}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Conan.Plugin.PropertyChanged.Tests", "Conan.Plugin.PropertyChanged.Tests\Conan.Plugin.PropertyChanged.Tests.csproj", "{BA2ECAC1-658A-4114-8F92-392D7F7E2B71}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED4763AD-9F26-4869-B1BB-83A0FB30F877}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED4763AD-9F26-4869-B1BB-83A0FB30F877}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED4763AD-9F26-4869-B1BB-83A0FB30F877}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED4763AD-9F26-4869-B1BB-83A0FB30F877}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7097EBE1-9F3D-48B9-A46F-A7B9B92D584A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7097EBE1-9F3D-48B9-A46F-A7B9B92D584A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7097EBE1-9F3D-48B9-A46F-A7B9B92D584A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7097EBE1-9F3D-48B9-A46F-A7B9B92D584A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA2ECAC1-658A-4114-8F92-392D7F7E2B71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA2ECAC1-658A-4114-8F92-392D7F7E2B71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA2ECAC1-658A-4114-8F92-392D7F7E2B71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA2ECAC1-658A-4114-8F92-392D7F7E2B71}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {24C391A8-F4B5-486B-B892-8A82DCE5C93A}
+	EndGlobalSection
+EndGlobal

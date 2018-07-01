@@ -1,0 +1,82 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+	var parameters = new List<string[]>() {
+		new[] {"bool",   "true",      "false"    },
+		new[] {"byte",   "(byte)1",   "(byte)2"  },
+		new[] {"char",   "'c'",       "'d'"      },
+		new[] {"double", "1.0",       "1.1"      },
+		new[] {"float",  "1.0f",      "1.1f"     },
+		new[] {"int",    "1",         "2"        },
+		new[] {"long",   "(long)1",   "(long)2"  },
+		new[] {"sbyte",  "(sbyte)1",  "(sbyte)2" },
+		new[] {"short",  "(short)1",  "(short)2" },
+		new[] {"string", "\"foo\"",   "\"bar\""  },
+		new[] {"uint",   "(uint)1",   "(uint)2"  },
+		new[] {"ulong",  "(ulong)1",  "(ulong)2" },
+		new[] {"ushort", "(ushort)1", "(ushort)2"},
+		new[] {"int?",   "1",         "2"        },
+	};
+
+	var asserts = new Dictionary<string, string>() {
+		{"SingleFireTest", "RAssert.PropertyChangedFired(code, value1);"},
+		{"GuardTest", "RAssert.ChangeGuardDoesNotRefire(code, value1);"},
+		{"MultiFireTest", "RAssert.ChangeGuardDoesDetectChange(code, value1, value2);"}
+	};
+
+	var codes = new Dictionary<string, string>() {
+{"ClassWithBase", @"using System.ComponentModel;
+using Conan.Plugin.PropertyChanged.Tests;
+public class PropertyChangedBase : INotifyPropertyChanged
+{{
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+}}
+
+public class TestClass : PropertyChangedBase
+{{
+    public {type} Property {{ get; set; }}
+}}"},
+{"SingleClass", @"using System.ComponentModel;
+using Conan.Plugin.PropertyChanged.Tests;
+public class TestClass : INotifyPropertyChanged
+{{
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	public {type} Property {{ get; set; }}
+}}"}
+	};
+#>
+using Xunit;
+
+namespace Conan.Plugin.PropertyChanged.Tests
+{
+<# foreach (var assert in asserts) { #>
+	public class <#= assert.Key #>
+	{
+<# foreach (var code in codes) { #>
+		[Theory]
+<# foreach (var parameter in parameters) { #>
+		[InlineData("<#= parameter[0] #>", <#= parameter[1] #>, <#= parameter[2] #>)]
+<# } #>
+        public void <#= code.Key #><T>(string type, T value1, T value2)
+        {
+            var code = $@"<#= code.Value #>";
+            <#= assert.Value #>
+        }
+
+		[Theory]
+		[ClassData(typeof(ComplexTestData))]
+        public void <#= code.Key #>_ComplexTypes<T>(string type, T value1, T value2)
+        {
+            var code = $@"<#= code.Value #>";
+            <#= assert.Value #>
+        }
+<# } #>
+	}
+<# } #>
+}
