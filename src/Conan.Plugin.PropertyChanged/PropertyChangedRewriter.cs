@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Linq;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Conan.Plugin.PropertyChanged
@@ -23,6 +23,7 @@ namespace Conan.Plugin.PropertyChanged
             private readonly INamedTypeSymbol inpcSymbol;
 
             private List<MemberDeclarationSyntax> membersToAdd = new List<MemberDeclarationSyntax>();
+            private ConcurrentDictionary<string, ImmutableArray<string>> dependantProperties = new ConcurrentDictionary<string, ImmutableArray<string>>();
             private IMethodSymbol helperMethod;
 
             public PropertyChangedSyntaxRewriter(Compilation compilation)
@@ -39,6 +40,11 @@ namespace Conan.Plugin.PropertyChanged
 
                 membersToAdd.Clear();
 
+                var model = compilation.GetSemanticModel(node.SyntaxTree);
+                var symbol = model.GetDeclaredSymbol(node);
+                var properties = node.Members.OfType<PropertyDeclarationSyntax>();
+                SetupDependencies(properties, model, symbol);
+
                 var newClass = (ClassDeclarationSyntax)base.VisitClassDeclaration(node);
 
                 return newClass.AddMembers(membersToAdd.ToArray());
@@ -51,6 +57,11 @@ namespace Conan.Plugin.PropertyChanged
                     return node;
 
                 membersToAdd.Clear();
+
+                var model = compilation.GetSemanticModel(node.SyntaxTree);
+                var symbol = model.GetDeclaredSymbol(node);
+                var properties = node.Members.OfType<PropertyDeclarationSyntax>();
+                SetupDependencies(properties, model, symbol);
 
                 var newStruct = (StructDeclarationSyntax)base.VisitStructDeclaration(node);
 
@@ -66,65 +77,109 @@ namespace Conan.Plugin.PropertyChanged
                 if (backingField == null)
                     return node;
 
+                // http://roslynquoter.azurewebsites.net/
+
+                BlockSyntax setterBlock = null;
+
                 if (helperMethod.Parameters.Length == 1)
                 {
+                    // string name
                     if (helperMethod.Parameters[0].Type.SpecialType.Equals(SpecialType.System_String))
                     {
-                        membersToAdd.Add(backingField.AsFieldDeclaration());
-                        // http://roslynquoter.azurewebsites.net/
-                        return PropertyDeclaration(node.Type, node.Identifier)
-                            .AddModifiers(node.Modifiers.ToArray())
-                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
-                                Block().Return(backingField.Name.AsIdentifierName())))
-                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
-                                Block()
-                                .If(Compare(backingField), ReturnStatement())
-                                .Assign(backingField, "value")
-                                .CallMethod(helperMethod, node.Identifier.Text.AsStringLiteral())))
-                            ;
+                        setterBlock = Block()
+                            .If(Compare(backingField), ReturnStatement())
+                            .Assign(backingField, "value")
+                            .CallMethod(helperMethod, node.Identifier.Text.AsStringLiteral());
+
+                        if (dependantProperties.TryGetValue(node.Identifier.Text, out var dps))
+                        {
+                            setterBlock = setterBlock.AddStatements(dps.Select(dp =>
+                                ExpressionStatement(InvocationExpression(helperMethod.Name.AsIdentifierName())
+                                    .WithArgumentList(RoslynHelpers.CreateArguments(
+                                        dp.AsStringLiteral()
+                                    )))).ToArray());
+                        }
                     }
                 }
 
                 if (helperMethod.Parameters.Length == 3)
                 {
+                    // string name, object before, object after
                     if (helperMethod.Parameters[0].Type.SpecialType.Equals(SpecialType.System_String) &&
                         helperMethod.Parameters[1].Type.SpecialType.Equals(SpecialType.System_Object) &&
                         helperMethod.Parameters[2].Type.SpecialType.Equals(SpecialType.System_Object))
                     {
-                        membersToAdd.Add(backingField.AsFieldDeclaration());
-                        return PropertyDeclaration(node.Type, node.Identifier)
-                            .AddModifiers(node.Modifiers.ToArray())
-                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
-                                Block().Return(backingField.Name.AsIdentifierName())))
-                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
-                                Block()
-                                .If(Compare(backingField), ReturnStatement())
-                                .DeclareVariable("before", node.Identifier.Text.AsIdentifierName())
-                                .Assign(backingField, "value")
-                                .DeclareVariable("after", node.Identifier.Text.AsIdentifierName())
-                                .CallMethod(helperMethod, node.Identifier.Text.AsStringLiteral(), "before".AsIdentifierName(), "after".AsIdentifierName())))
-                            ;
+                        setterBlock = Block()
+                            .If(Compare(backingField), ReturnStatement())
+                            .DeclareVariable("before", node.Identifier.Text.AsIdentifierName())
+                            .Assign(backingField, "value")
+                            .DeclareVariable("after", node.Identifier.Text.AsIdentifierName())
+                            .CallMethod(helperMethod, node.Identifier.Text.AsStringLiteral(), "before".AsIdentifierName(), "after".AsIdentifierName());
+
+                        if (dependantProperties.TryGetValue(node.Identifier.Text, out var dps))
+                        {
+                            setterBlock = setterBlock.AddStatements(dps.Select(dp =>
+                                ExpressionStatement(InvocationExpression(helperMethod.Name.AsIdentifierName())
+                                    .WithArgumentList(RoslynHelpers.CreateArguments(
+                                        dp.AsStringLiteral(),
+                                        "before".AsIdentifierName(),
+                                        "after".AsIdentifierName()
+                                    )))).ToArray());
+                        }
+
                     }
+                }
+
+                if (setterBlock != null)
+                {
+                    membersToAdd.Add(backingField.AsFieldDeclaration());
+                    return PropertyDeclaration(node.Type, node.Identifier)
+                        .AddModifiers(node.Modifiers.ToArray())
+                        .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
+                            Block().Return(backingField.Name.AsIdentifierName())))
+                        .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
+                            setterBlock));
                 }
 
                 // TODO report error that helper could not be called
                 return node;
             }
 
-            private static StatementSyntax TryCallHelperMethod(IMethodSymbol helperMethod, PropertyDeclarationSyntax node)
+            private void SetupDependencies(IEnumerable<PropertyDeclarationSyntax> properties, SemanticModel model, INamedTypeSymbol symbol)
             {
-                // TODO Handle other types of helper methods
+                dependantProperties.Clear();
 
-                if (helperMethod.Parameters.Length == 1)
+                foreach (var property in properties)
                 {
-                    if (helperMethod.Parameters[0].Type.SpecialType.Equals(SpecialType.System_String))
+                    IEnumerable<IdentifierNameSyntax> nodes = null;
+
+                    if (property.ExpressionBody != null)
+                        nodes = property.ExpressionBody.DescendantNodes().OfType<IdentifierNameSyntax>();
+                    else if (property.AccessorList != null)
                     {
-                        return ExpressionStatement(InvocationExpression(helperMethod.Name.AsIdentifierName())
-                            .WithArgumentList(RoslynHelpers.CreateArguments(node.Identifier.Text.AsStringLiteral())));
+                        var getter = property.AccessorList.Accessors.FirstOrDefault(a => a.Kind() == SyntaxKind.GetAccessorDeclaration);
+                        if (getter != null)
+                        {
+                            if (getter.Body != null)
+                                nodes = getter.Body.DescendantNodes().OfType<IdentifierNameSyntax>();
+                            else if (getter.ExpressionBody != null)
+                                nodes = getter.ExpressionBody.DescendantNodes().OfType<IdentifierNameSyntax>();
+                        }
+                    }
+
+                    if (nodes == null)
+                        continue;
+
+                    foreach (var item in nodes)
+                    {
+                        var info = model.GetSymbolInfo(item);
+                        var propertySymbol = info.Symbol as IPropertySymbol;
+                        if (propertySymbol.ContainingType.Equals(symbol))
+                        {
+                            dependantProperties.AddOrUpdate(propertySymbol.Name, _ => ImmutableArray<string>.Empty.Add(property.Identifier.Text), (_, l) => l.Add(property.Identifier.Text));
+                        }
                     }
                 }
-
-                return null;
             }
 
             private static ExpressionSyntax Compare(IFieldSymbol field)
