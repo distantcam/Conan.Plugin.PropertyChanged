@@ -29,6 +29,7 @@
 	};
 
 	var codes = new Dictionary<string, string>() {
+
 {"ClassWithBase", @"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
 public class PropertyChangedBase : INotifyPropertyChanged
@@ -41,6 +42,7 @@ public class TestClass : PropertyChangedBase
 {{
     public {type} Property {{ get; set; }}
 }}"},
+
 {"SingleClass", @"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
 public class TestClass : INotifyPropertyChanged
@@ -48,7 +50,17 @@ public class TestClass : INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 	public {type} Property {{ get; set; }}
+}}"},
+
+{"BeforeAfterHelper", @"using System.ComponentModel;
+using Conan.Plugin.PropertyChanged.Tests;
+public class TestClass : INotifyPropertyChanged
+{{
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged(string name, object before, object after) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+	public {type} Property {{ get; set; }}
 }}"}
+
 	};
 #>
 using Xunit;
@@ -68,7 +80,6 @@ namespace Conan.Plugin.PropertyChanged.Tests
             var code = $@"<#= code.Value #>";
             <#= assert.Value #>
         }
-
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
         public void <#= code.Key #>_ComplexTypes<T>(string type, T value1, T value2)

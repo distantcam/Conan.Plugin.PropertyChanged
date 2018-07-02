@@ -12,44 +12,42 @@ namespace Conan.Plugin.PropertyChanged.Tests
 {
     public static class RAssert
     {
+        public static void PropertyChangedNotFired<T>(string code, T value, string className = "TestClass", string propertyName = "Property")
+        {
+            HasPropertyChanged<T>(code, (instance, property) =>
+            {
+                property.SetValue(instance, value);
+            }, 0, className, propertyName);
+        }
+
         public static void PropertyChangedFired<T>(string code, T value, string className = "TestClass", string propertyName = "Property")
         {
-            var (instance, property) = CreateTestInstance(code, className, propertyName);
-
-            property.SetValue(instance, default(T));
-
-            var count = 0;
-            instance.PropertyChanged += (sender, e) =>
+            HasPropertyChanged<T>(code, (instance, property) =>
             {
-                if (e.PropertyName == propertyName)
-                    count++;
-            };
-
-            property.SetValue(instance, value);
-
-            Assert.Equal(1, count);
+                property.SetValue(instance, value);
+            }, 1, className, propertyName);
         }
 
         public static void ChangeGuardDoesNotRefire<T>(string code, T value, string className = "TestClass", string propertyName = "Property")
         {
-            var (instance, property) = CreateTestInstance(code, className, propertyName);
-
-            property.SetValue(instance, default(T));
-
-            var count = 0;
-            instance.PropertyChanged += (sender, e) =>
+            HasPropertyChanged<T>(code, (instance, property) =>
             {
-                if (e.PropertyName == propertyName)
-                    count++;
-            };
-
-            property.SetValue(instance, value);
-            property.SetValue(instance, value);
-
-            Assert.Equal(1, count);
+                property.SetValue(instance, value);
+                property.SetValue(instance, value);
+            }, 1, className, propertyName);
         }
 
         public static void ChangeGuardDoesDetectChange<T>(string code, T value1, T value2, string className = "TestClass", string propertyName = "Property")
+        {
+            HasPropertyChanged<T>(code, (instance, property) =>
+            {
+                property.SetValue(instance, value1);
+                property.SetValue(instance, value2);
+                property.SetValue(instance, value1);
+            }, 3, className, propertyName);
+        }
+
+        private static void HasPropertyChanged<T>(string code, Action<INotifyPropertyChanged, PropertyInfo> action, int expectedCount, string className = "TestClass", string propertyName = "Property")
         {
             var (instance, property) = CreateTestInstance(code, className, propertyName);
 
@@ -62,11 +60,9 @@ namespace Conan.Plugin.PropertyChanged.Tests
                     count++;
             };
 
-            property.SetValue(instance, value1);
-            property.SetValue(instance, value2);
-            property.SetValue(instance, value1);
+            action(instance, property);
 
-            Assert.Equal(3, count);
+            Assert.Equal(expectedCount, count);
         }
 
         private static (INotifyPropertyChanged Instance, PropertyInfo Property) CreateTestInstance(string code, string className, string propertyName)

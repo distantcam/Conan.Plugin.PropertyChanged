@@ -62,37 +62,73 @@ namespace Conan.Plugin.PropertyChanged
                 var symbol = compilation.GetSemanticModel(node.SyntaxTree).GetDeclaredSymbol(node);
 
                 var backingField = symbol.ContainingType.GetMembers().OfType<IFieldSymbol>()
-                    .FirstOrDefault(f => f.AssociatedSymbol.Equals(symbol));
+                    .FirstOrDefault(f => f.AssociatedSymbol?.Equals(symbol) == true);
                 if (backingField == null)
                     return node;
 
-                membersToAdd.Add(backingField.AsFieldDeclaration());
+                if (helperMethod.Parameters.Length == 1)
+                {
+                    if (helperMethod.Parameters[0].Type.SpecialType.Equals(SpecialType.System_String))
+                    {
+                        membersToAdd.Add(backingField.AsFieldDeclaration());
+                        // http://roslynquoter.azurewebsites.net/
+                        return PropertyDeclaration(node.Type, node.Identifier)
+                            .AddModifiers(node.Modifiers.ToArray())
+                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
+                                Block().Return(backingField.Name.AsIdentifierName())))
+                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
+                                Block()
+                                .If(Compare(backingField), ReturnStatement())
+                                .Assign(backingField, "value")
+                                .CallMethod(helperMethod, node.Identifier.Text.AsStringLiteral())))
+                            ;
+                    }
+                }
 
-                // http://roslynquoter.azurewebsites.net/
-                return PropertyDeclaration(node.Type, node.Identifier)
-                    .AddModifiers(node.Modifiers.ToArray())
-                    .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
-                        Block().Return(backingField.Name.AsIdentifierName())))
-                    .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
-                        Block()
-                        .If(Compare(backingField), ReturnStatement())
-                        .Assign(backingField, "value")
-                        .AddStatements(CallHelperMethod(helperMethod, node))))
-                    ;
+                if (helperMethod.Parameters.Length == 3)
+                {
+                    if (helperMethod.Parameters[0].Type.SpecialType.Equals(SpecialType.System_String) &&
+                        helperMethod.Parameters[1].Type.SpecialType.Equals(SpecialType.System_Object) &&
+                        helperMethod.Parameters[2].Type.SpecialType.Equals(SpecialType.System_Object))
+                    {
+                        membersToAdd.Add(backingField.AsFieldDeclaration());
+                        return PropertyDeclaration(node.Type, node.Identifier)
+                            .AddModifiers(node.Modifiers.ToArray())
+                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
+                                Block().Return(backingField.Name.AsIdentifierName())))
+                            .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
+                                Block()
+                                .If(Compare(backingField), ReturnStatement())
+                                .DeclareVariable("before", node.Identifier.Text.AsIdentifierName())
+                                .Assign(backingField, "value")
+                                .DeclareVariable("after", node.Identifier.Text.AsIdentifierName())
+                                .CallMethod(helperMethod, node.Identifier.Text.AsStringLiteral(), "before".AsIdentifierName(), "after".AsIdentifierName())))
+                            ;
+                    }
+                }
+
+                // TODO report error that helper could not be called
+                return node;
             }
 
-            private static StatementSyntax CallHelperMethod(IMethodSymbol helperMethod, PropertyDeclarationSyntax node)
+            private static StatementSyntax TryCallHelperMethod(IMethodSymbol helperMethod, PropertyDeclarationSyntax node)
             {
                 // TODO Handle other types of helper methods
 
-                return ExpressionStatement(InvocationExpression(helperMethod.Name.AsIdentifierName())
-                    .WithArgumentList(RoslynHelpers.CreateArguments(node.Identifier.Text.AsStringLiteral())));
+                if (helperMethod.Parameters.Length == 1)
+                {
+                    if (helperMethod.Parameters[0].Type.SpecialType.Equals(SpecialType.System_String))
+                    {
+                        return ExpressionStatement(InvocationExpression(helperMethod.Name.AsIdentifierName())
+                            .WithArgumentList(RoslynHelpers.CreateArguments(node.Identifier.Text.AsStringLiteral())));
+                    }
+                }
+
+                return null;
             }
 
             private static ExpressionSyntax Compare(IFieldSymbol field)
             {
-                // TODO Compare the type and pick the right comparer
-
                 if (field.Type.SpecialType == SpecialType.System_Boolean ||
                     field.Type.SpecialType == SpecialType.System_Char ||
                     field.Type.SpecialType == SpecialType.System_SByte ||
@@ -141,8 +177,7 @@ namespace Conan.Plugin.PropertyChanged
                 if (type == null)
                     return null;
 
-                var helper = type.GetMembers("OnPropertyChanged").FirstOrDefault() as IMethodSymbol;
-                if (helper != null)
+                if (type.GetMembers("OnPropertyChanged").FirstOrDefault() is IMethodSymbol helper)
                     return helper;
 
                 return FindHelperMethod(type.BaseType);

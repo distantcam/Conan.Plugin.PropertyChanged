@@ -44,6 +44,9 @@ namespace Conan.Plugin.PropertyChanged
         public static BlockSyntax CallMethod(this BlockSyntax block, string name, params ExpressionSyntax[] args) =>
             block.AddStatements(ExpressionStatement(InvocationExpression(name.AsIdentifierName()).WithArgumentList(CreateArguments(args))));
 
+        public static BlockSyntax CallMethod(this BlockSyntax block, IMethodSymbol method, params ExpressionSyntax[] args) =>
+            CallMethod(block, method.Name, args);
+
         public static BlockSyntax Return(this BlockSyntax block, ExpressionSyntax expression = null) =>
             block.AddStatements(ReturnStatement(expression));
 
@@ -71,7 +74,22 @@ namespace Conan.Plugin.PropertyChanged
                 SeparatedList(new[] { VariableDeclarator(Identifier(fieldSymbol.Name)) })
             ));
 
+        public static VariableDeclarationSyntax Var() => VariableDeclaration(IdentifierName("var"));
+
         public static BlockSyntax If(this BlockSyntax block, ExpressionSyntax condition, StatementSyntax statement) =>
             block.AddStatements(IfStatement(condition, statement));
+
+        public static BlockSyntax DeclareVariable(this BlockSyntax block, string name, ExpressionSyntax value) =>
+            block.AddStatements(
+                LocalDeclarationStatement(
+                    Var()
+                    .WithVariables(
+                        SingletonSeparatedList(
+                            VariableDeclarator(
+                                Identifier(name))
+                            .WithInitializer(
+                                EqualsValueClause(value))))));
+
+
     }
 }
