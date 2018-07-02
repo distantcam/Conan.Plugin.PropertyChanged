@@ -133,12 +133,14 @@ namespace Conan.Plugin.PropertyChanged
                 if (setterBlock != null)
                 {
                     membersToAdd.Add(backingField.AsFieldDeclaration());
-                    return PropertyDeclaration(node.Type, node.Identifier)
-                        .AddModifiers(node.Modifiers.ToArray())
-                        .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
-                            Block().Return(backingField.Name.AsIdentifierName())))
-                        .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
-                            setterBlock));
+                    return node
+                        .WithAccessorList(AccessorList(List(
+                            new AccessorDeclarationSyntax[]{
+                                AccessorDeclaration(SyntaxKind.GetAccessorDeclaration,
+                                    Block().Return(backingField.Name.AsIdentifierName())),
+                                AccessorDeclaration(SyntaxKind.SetAccessorDeclaration,
+                                    setterBlock)
+                            })));
                 }
 
                 // TODO report error that helper could not be called
