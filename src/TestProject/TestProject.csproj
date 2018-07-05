@@ -6,6 +6,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DebugType>full</DebugType>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
