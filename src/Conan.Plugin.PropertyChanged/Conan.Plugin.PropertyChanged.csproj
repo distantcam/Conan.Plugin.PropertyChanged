@@ -1,8 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard1.3</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Version>2.8.2-alpha5</Version>
+    <Authors>Cameron MacFarland</Authors>
+    <Company />
+    <Product />
+    <Description>Conan plugin that adds an automatic implementation of the INotifyPropertyChanged interface.</Description>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/distantcam/Conan.Plugin.PropertyChanged/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/distantcam/Conan.Plugin.PropertyChanged</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <RepositoryType />
+    <PackageTags>Conan, Plugins, CSharp, PropertyChanged, Roslyn, CodeAnalysis, CodeGeneration</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

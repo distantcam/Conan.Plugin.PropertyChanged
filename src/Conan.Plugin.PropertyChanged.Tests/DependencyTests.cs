@@ -63,7 +63,7 @@ public class TestClass : INotifyPropertyChanged
 
         private void AssertDependency(string code)
         {
-            var assembly = RAssert.Compile(code);
+            var (assembly, diagnostics) = RAssert.Compile(code);
             var type = assembly.GetTypes().Single(x => x.Name == "TestClass");
 
             var givenNamesProperty = type.GetProperty("GivenNames");

@@ -31,7 +31,6 @@ public struct CustomStruct
     public override int GetHashCode() => Value.GetHashCode();
 }
 ";
-
             RAssert.Compile(code);
         }
 
@@ -46,25 +45,26 @@ public class TestClass : INotifyPropertyChanged
 	public int Property { get; set; }
 }
 ";
+            var (assembly, diagnostics) = RAssert.Compile(code);
 
-            RAssert.PropertyChangedNotFired(code, 1);
+            Assert.Single(diagnostics);
+            Assert.Equal("PC0002", diagnostics[0].Id);
         }
 
         [Fact]
-        public void NormalPropertyNotConverted()
+        public void MissingHelper()
         {
             var code = @"using System.ComponentModel;
 public class TestClass : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-    private int _property;
-    public int Property { get => _property; set => _property = value; }
+	public int Property { get; set; }
 }
 ";
+            var (assembly, diagnostics) = RAssert.Compile(code);
 
-            RAssert.PropertyChangedNotFired(code, 1);
+            Assert.Single(diagnostics);
+            Assert.Equal("PC0001", diagnostics[0].Id);
         }
     }
 }

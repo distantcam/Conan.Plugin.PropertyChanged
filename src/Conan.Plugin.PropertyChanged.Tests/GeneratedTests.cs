@@ -19,7 +19,9 @@ namespace Conan.Plugin.PropertyChanged.Tests
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void ClassWithBase<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -37,7 +39,9 @@ public class TestClass : PropertyChangedBase
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void ClassWithBase_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -68,7 +72,9 @@ public class TestClass : PropertyChangedBase
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void SingleClass<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -82,7 +88,9 @@ public class TestClass : INotifyPropertyChanged
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void SingleClass_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -109,7 +117,9 @@ public class TestClass : INotifyPropertyChanged
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void BeforeAfterHelper<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -123,7 +133,9 @@ public class TestClass : INotifyPropertyChanged
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void BeforeAfterHelper_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -153,7 +165,9 @@ public class TestClass : INotifyPropertyChanged
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void ClassWithBase<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -171,7 +185,9 @@ public class TestClass : PropertyChangedBase
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void ClassWithBase_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -202,7 +218,9 @@ public class TestClass : PropertyChangedBase
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void SingleClass<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -216,7 +234,9 @@ public class TestClass : INotifyPropertyChanged
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void SingleClass_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -243,7 +263,9 @@ public class TestClass : INotifyPropertyChanged
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void BeforeAfterHelper<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -257,7 +279,9 @@ public class TestClass : INotifyPropertyChanged
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void BeforeAfterHelper_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -287,7 +311,9 @@ public class TestClass : INotifyPropertyChanged
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void ClassWithBase<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -305,7 +331,9 @@ public class TestClass : PropertyChangedBase
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void ClassWithBase_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -336,7 +364,9 @@ public class TestClass : PropertyChangedBase
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void SingleClass<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -350,7 +380,9 @@ public class TestClass : INotifyPropertyChanged
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void SingleClass_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -377,7 +409,9 @@ public class TestClass : INotifyPropertyChanged
 		[InlineData("ulong", (ulong)1, (ulong)2)]
 		[InlineData("ushort", (ushort)1, (ushort)2)]
 		[InlineData("int?", 1, 2)]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void BeforeAfterHelper<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;
@@ -391,7 +425,9 @@ public class TestClass : INotifyPropertyChanged
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void BeforeAfterHelper_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"using System.ComponentModel;
 using Conan.Plugin.PropertyChanged.Tests;

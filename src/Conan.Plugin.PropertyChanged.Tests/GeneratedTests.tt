@@ -75,14 +75,18 @@ namespace Conan.Plugin.PropertyChanged.Tests
 <# foreach (var parameter in parameters) { #>
 		[InlineData("<#= parameter[0] #>", <#= parameter[1] #>, <#= parameter[2] #>)]
 <# } #>
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void <#= code.Key #><T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"<#= code.Value #>";
             <#= assert.Value #>
         }
 		[Theory]
 		[ClassData(typeof(ComplexTestData))]
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
         public void <#= code.Key #>_ComplexTypes<T>(string type, T value1, T value2)
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
         {
             var code = $@"<#= code.Value #>";
             <#= assert.Value #>

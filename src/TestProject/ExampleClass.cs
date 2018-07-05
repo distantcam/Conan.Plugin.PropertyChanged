@@ -2,8 +2,27 @@
 
 namespace TestProject
 {
+    public class MissingPropertyChangedExampleClass : INotifyPropertyChanged
+    {
+        public int Number { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    public class BadPropertyChangedExampleClass : INotifyPropertyChanged
+    {
+        public int Number { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(object name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name.ToString()));
+    }
+
     public class ExampleClass : PropertyChangedBase
     {
+        private int _property;
+        public int Property { get => _property; set => _property = value; }
+
         public int Number { get; set; }
 
         public bool Flag { get; set; }
