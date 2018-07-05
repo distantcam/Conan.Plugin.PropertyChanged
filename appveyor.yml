@@ -1,0 +1,13 @@
+image: Visual Studio 2017
+
+build_script:
+- ps: dotnet build -c Release
+
+test_script:
+- ps: dotnet test ./src/Conan.Plugin.PropertyChanged.Tests/Conan.Plugin.PropertyChanged.Tests.csproj -c Release --no-restore
+
+after_test:
+- ps: dotnet pack -c Release
+
+artifacts:
+- path: '**\\*.nupkg'

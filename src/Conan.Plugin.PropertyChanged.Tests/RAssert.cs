@@ -95,14 +95,15 @@ namespace Conan.Plugin.PropertyChanged.Tests
                 CSharpCompilation.Create("TestInMemoryAssembly") // ..with some fake dll name
                 .WithOptions(compileOptions)
                 .AddReferences(
-#if DEBUG
-                    MetadataReference.CreateFromFile(@"..\..\..\Conan.Plugin.PropertyChanged\bin\Debug\Conan.Plugin.PropertyChanged.dll"),
-#else
-                    MetadataReference.CreateFromFile(@"..\..\..\Conan.Plugin.PropertyChanged\bin\Release\Conan.Plugin.PropertyChanged.dll"),
-#endif
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(INotifyPropertyChanged).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(RAssert).Assembly.Location)
+                    MetadataReference.CreateFromFile(typeof(ISet<>).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(RAssert).Assembly.Location),
+#if DEBUG
+                    MetadataReference.CreateFromFile(@"..\..\..\Conan.Plugin.PropertyChanged\bin\Debug\Conan.Plugin.PropertyChanged.dll")
+#else
+                    MetadataReference.CreateFromFile(@"..\..\..\Conan.Plugin.PropertyChanged\bin\Release\Conan.Plugin.PropertyChanged.dll")
+#endif
                 );
 
             // Parse and compile the C# code into a *.dll and *.xml file in-memory
